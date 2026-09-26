@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#172033">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>My Money LK</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--ink:#172033;--muted:#697386;--bg:#f5f7fb;--card:#fff;--line:#e5e8ef;--green:#16824d;--red:#b93636;--soft:#eef2f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:540px;margin:auto;min-height:100vh;background:var(--bg);padding-bottom:78px}
+header{background:var(--ink);color:white;padding:24px 20px 18px;position:sticky;top:0;z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center}.brand{font-size:25px;font-weight:800}.tag{font-size:12px;opacity:.75;margin-top:4px}
+button,input,select{font:inherit}button{border:0;cursor:pointer}.lang{background:#fff;color:var(--ink);border-radius:10px;padding:8px 10px;font-weight:700}
+main{padding:15px}.page{display:none}.page.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:13px;box-shadow:0 3px 14px #1720330a}
+.hero{background:var(--ink);color:white;border-radius:20px;padding:20px;margin-bottom:13px}.hero .label{opacity:.7;font-size:12px}.hero .big{font-size:31px;font-weight:800;margin:7px 0 15px}.heroGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.heroMini{background:#ffffff12;padding:11px;border-radius:12px}.heroMini b{display:block;font-size:16px;margin-top:3px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.stat h4,.card h3{margin:0 0 7px;font-size:12px;color:var(--muted);letter-spacing:.3px}.stat .num{font-size:21px;font-weight:800}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}.income{background:#def4e8;color:#146e45}.expense{background:#fde7e7;color:#a42e2e}.action{padding:14px;border-radius:14px;font-weight:800}
+.progress{height:9px;background:#e5e8ef;border-radius:10px;overflow:hidden}.progress>div{height:100%;background:var(--green);border-radius:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}.small{font-size:12px;color:var(--muted)}.danger{color:var(--red)}
+input,select{width:100%;padding:12px;border:1px solid #d8dde7;border-radius:11px;background:white;margin:5px 0 9px;outline:none}input:focus,select:focus{border-color:#7c8aa5}
+.primary{width:100%;background:var(--ink);color:white;padding:13px;border-radius:12px;font-weight:800}.secondary{width:100%;background:var(--soft);color:var(--ink);padding:12px;border-radius:12px;font-weight:700;margin-top:8px}
+canvas{width:100%;height:185px}.empty{color:var(--muted);font-size:13px;padding:10px 0}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(540px,100%);height:68px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+.nav{background:none;color:#7a8394;font-size:10px;padding:6px 2px}.nav span{display:block;font-size:20px;margin-bottom:2px}.nav.active{color:var(--ink);font-weight:800}
+#modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:flex-end}.sheet{background:#fff;width:min(540px,100%);margin:auto;border-radius:22px 22px 0 0;padding:20px}
+.sheet h2{margin:0 0 15px}.close{background:#eee;border-radius:12px;width:100%;padding:12px;margin-top:8px}
+.badge{display:inline-block;font-size:10px;padding:4px 7px;border-radius:8px;background:#eef2f7;color:#5e687b}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="top"><div><div class="brand">My Money LK 🇱🇰</div><div class="tag" id="tag">Your simple personal money manager</div></div><button class="lang" onclick="toggleLang()">සිං / EN</button></div></header>
+
+<main>
+<section id="home" class="page active">
+<div class="hero"><div class="label" id="balanceLabel">AVAILABLE BALANCE</div><div class="big" id="balance">Rs. 0</div>
+<div class="heroGrid"><div class="heroMini"><span class="label" id="incLabel">Income</span><b id="income">Rs. 0</b></div><div class="heroMini"><span class="label" id="expLabel">Expenses</span><b id="expense">Rs. 0</b></div></div></div>
+<div class="actions"><button class="action income" onclick="openTx('income')" id="addIncome">+ Income</button><button class="action expense" onclick="openTx('expense')" id="addExpense">+ Expense</button></div>
+<div class="grid"><div class="card stat"><h4 id="needsLabel">NEEDS</h4><div class="num" id="needs">Rs. 0</div></div><div class="card stat"><h4 id="wantsLabel">WANTS</h4><div class="num" id="wants">Rs. 0</div></div></div>
+<div class="card"><h3 id="budgetTitle">MONTHLY BUDGET</h3><input id="budget" type="number" placeholder="Budget in LKR"><button class="primary" onclick="saveBudget()" id="saveBudget">Save Budget</button><div class="small" id="budgetStatus"></div></div>
+<div class="card"><h3 id="goalTitle">MAIN SAVINGS GOAL</h3><input id="goal" type="number" placeholder="Savings target in LKR"><button class="primary" onclick="saveGoal()" id="saveGoal">Save Goal</button><div style="margin-top:13px"><div class="small" id="goalText">Rs. 0 / Rs. 50,000</div><div class="progress"><div id="goalBar" style="width:0%"></div></div></div></div>
+</section>
+
+<section id="budgetPage" class="page"><div class="card"><h3 id="budgetPageTitle">BUDGET & SPENDING</h3><div class="grid"><div class="card stat"><h4>Income</h4><div class="num" id="bIncome">Rs.0</div></div><div class="card stat"><h4>Expenses</h4><div class="num" id="bExpense">Rs.0</div></div></div><div class="small" id="budgetDetail"></div></div><div class="card"><h3>RECENT TRANSACTIONS</h3><div id="txList"></div></div></section>
+
+<section id="goalsPage" class="page"><div class="card"><h3>SAVINGS GOALS</h3><div id="goalsList"></div><button class="primary" onclick="addGoal()">+ Add Savings Goal</button></div></section>
+
+<section id="loansPage" class="page"><div class="card"><h3>DEBT / LOANS</h3><div id="loansList"></div><button class="primary" onclick="addLoan()">+ Add Loan</button></div><div class="card"><h3>QUICK CALCULATOR</h3><input id="loanAmt" type="number" placeholder="Loan amount"><input id="loanRate" type="number" placeholder="Annual interest %"><input id="loanMonths" type="number" placeholder="Number of months"><button class="primary" onclick="calcLoan()">Calculate monthly payment</button><div class="small" id="loanResult"></div></div></section>
+
+<section id="reportsPage" class="page"><div class="card"><h3>MONTHLY REPORT</h3><canvas id="chart"></canvas><div class="small" id="reportText"></div></div><div class="card"><h3>DATA</h3><button class="secondary" onclick="exportData()">📥 Export my data</button><button class="secondary" onclick="resetAll()">Reset app data</button><p class="small">Your data stays in this browser. This demo is not connected to a bank account.</p></div></section>
+</main>
+
+<nav class="bottom">
+<button class="nav active" onclick="showPage('home',this)"><span>⌂</span>Home</button>
+<button class="nav" onclick="showPage('budgetPage',this)"><span>▣</span>Budget</button>
+<button class="nav" onclick="showPage('goalsPage',this)"><span>◎</span>Goals</button>
+<button class="nav" onclick="showPage('loansPage',this)"><span>◈</span>Loans</button>
+<button class="nav" onclick="showPage('reportsPage',this)"><span>▥</span>Reports</button>
+</nav>
+</div>
+
+<div id="modal"><div class="sheet"><h2 id="modalTitle">Add Income</h2><label>Amount (LKR)</label><input id="amt" type="number" placeholder="50000"><label>Category</label><select id="cat"><option>Salary</option><option>Business</option><option>Food</option><option>Transport</option><option>Rent</option><option>Bills</option><option>Shopping</option><option>Education</option><option>Other</option></select><label>Note</label><input id="note" placeholder="Optional"><button class="primary" onclick="saveTx()">Save</button><button class="close" onclick="closeModal()">Cancel</button></div></div>
+
+<script>
+let lang=localStorage.mlkLang||'en', tx=JSON.parse(localStorage.mlkTx||'[]'), loans=JSON.parse(localStorage.mlkLoans||'[]'), goals=JSON.parse(localStorage.mlkGoals||'[]'), budget=+localStorage.mlkBudget||0, goal=+localStorage.mlkGoal||50000, txType='income';
+const $=id=>document.getElementById(id), money=n=>'Rs. '+Math.round(n).toLocaleString('en-LK');
+function totals(){let inc=tx.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=tx.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);return{inc,exp,bal:inc-exp,needs:tx.filter(x=>x.type==='expense'&&['Food','Transport','Rent','Bills'].includes(x.cat)).reduce((a,x)=>a+x.amount,0),wants:tx.filter(x=>x.type==='expense'&&!['Food','Transport','Rent','Bills'].includes(x.cat)).reduce((a,x)=>a+x.amount,0)}}
+function render(){let t=totals();$('income').textContent=money(t.inc);$('expense').textContent=money(t.exp);$('balance').textContent=money(t.bal);$('needs').textContent=money(t.needs);$('wants').textContent=money(t.wants);$('bIncome').textContent=money(t.inc);$('bExpense').textContent=money(t.exp);$('budget').value=budget||'';$('goal').value=goal||'';$('budgetStatus').textContent=budget?(t.exp>budget?'Over budget by '+money(t.exp-budget):'Budget remaining: '+money(budget-t.exp)):'';let saved=Math.max(0,t.bal);$('goalText').textContent=money(Math.min(saved,goal))+' / '+money(goal);$('goalBar').style.width=(goal?Math.min(100,saved/goal*100):0)+'%';$('budgetDetail').textContent=budget?'Spent '+money(t.exp)+' of '+money(budget):'Set a monthly budget to track spending.';renderTx();renderGoals();renderLoans();draw();applyLang()}
+function renderTx(){let a=tx.slice().reverse().slice(0,15);$('txList').innerHTML=a.length?a.map((x,i)=>`<div class="row"><div><b>${x.cat}</b><div class="small">${x.note||''}</div></div><b class="${x.type==='expense'?'danger':''}">${x.type==='expense'?'-':'+'}${money(x.amount)}</b></div>`).join(''):'<div class="empty">No transactions yet.</div>'}
+function renderGoals(){$('goalsList').innerHTML=goals.length?goals.map((g,i)=>{let p=Math.min(100,g.current/g.target*100);return `<div class="row"><div style="width:88%"><b>${g.name}</b><div class="small">${money(g.current)} / ${money(g.target)}</div><div class="progress"><div style="width:${p}%"></div></div></div><button onclick="goals.splice(${i},1);persist();render()">×</button></div>`}).join(''):'<div class="empty">No extra goals yet.</div>'}
+function renderLoans(){$('loansList').innerHTML=loans.length?loans.map((l,i)=>`<div class="row"><div><b>${l.name}</b><div class="small">Remaining ${money(l.remaining)} • Monthly ${money(l.payment)}</div></div><button onclick="loans.splice(${i},1);persist();render()">×</button></div>`).join(''):'<div class="empty">No loans added yet.</div>'}
+function persist(){localStorage.mlkTx=JSON.stringify(tx);localStorage.mlkLoans=JSON.stringify(loans);localStorage.mlkGoals=JSON.stringify(goals);localStorage.mlkBudget=budget;localStorage.mlkGoal=goal}
+function showPage(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');scrollTo(0,0)}
+function openTx(t){txType=t;$('modalTitle').textContent=t==='income'?'Add Income':'Add Expense';$('cat').value=t==='income'?'Salary':'Food';$('modal').style.display='flex'}
+function closeModal(){$('modal').style.display='none';$('amt').value='';$('note').value=''}
+function saveTx(){let amount=+$('amt').value;if(!amount)return alert('Enter an amount');tx.push({type:txType,amount,cat:$('cat').value,note:$('note').value});persist();closeModal();render()}
+function saveBudget(){budget=+$('budget').value||0;persist();render()}
+function saveGoal(){goal=+$('goal').value||50000;persist();render()}
+function addGoal(){let name=prompt('Goal name','Emergency Fund');if(!name)return;let target=+prompt('Target amount (LKR)','100000');if(!target)return;let current=+prompt('Already saved (LKR)','0')||0;goals.push({name,target,current});persist();render()}
+function addLoan(){let name=prompt('Loan name','Personal Loan');if(!name)return;let amount=+prompt('Original amount (LKR)','500000');if(!amount)return;let remaining=+prompt('Remaining balance (LKR)',amount)||0;let payment=+prompt('Monthly payment (LKR)','25000')||0;loans.push({name,amount,remaining,payment});persist();render()}
+function calcLoan(){let p=+$('loanAmt').value,r=+$('loanRate').value/1200,n=+$('loanMonths').value;if(!p||!n)return;$('loanResult').textContent='Estimated monthly payment: '+money(r?p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):p/n)}
+function exportData(){let b=new Blob([JSON.stringify({tx,loans,goals,budget,goal},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='my-money-lk-data.json';a.click()}
+function resetAll(){if(confirm('Delete all app data?')){tx=[];loans=[];goals=[];budget=0;goal=50000;persist();render()}}
+function draw(){let c=$('chart'),ctx=c.getContext('2d'),d=devicePixelRatio||1;c.width=c.clientWidth*d;c.height=185*d;ctx.scale(d,d);let t=totals(),m=Math.max(t.inc,t.exp,1),items=[['Income',t.inc],['Expenses',t.exp]],w=c.clientWidth;items.forEach((x,i)=>{let bh=x[1]/m*120,bw=70,xp=w*(i+1)/3;ctx.fillStyle='#172033';ctx.fillRect(xp-bw/2,145-bh,bw,bh);ctx.fillStyle='#697386';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(x[0],xp,170);ctx.fillStyle='#172033';ctx.font='12px Arial';ctx.fillText(money(x[1]),xp,138-bh)})}
+function toggleLang(){lang=lang==='en'?'si':'en';localStorage.mlkLang=lang;applyLang()}
+function applyLang(){if(lang==='en'){ $('tag').textContent='Your simple personal money manager';$('balanceLabel').textContent='AVAILABLE BALANCE';$('incLabel').textContent='Income';$('expLabel').textContent='Expenses';$('addIncome').textContent='+ Income';$('addExpense').textContent='+ Expense';$('needsLabel').textContent='NEEDS';$('wantsLabel').textContent='WANTS';$('budgetTitle').textContent='MONTHLY BUDGET';$('saveBudget').textContent='Save Budget';$('goalTitle').textContent='MAIN SAVINGS GOAL';$('saveGoal').textContent='Save Goal'}else{$('tag').textContent='ඔබේ සරල මුදල් කළමනාකරණය';$('balanceLabel').textContent='දැනට ඉතිරි මුදල';$('incLabel').textContent='ආදායම';$('expLabel').textContent='වියදම්';$('addIncome').textContent='+ ආදායම';$('addExpense').textContent='+ වියදම';$('needsLabel').textContent='අත්‍යවශ්‍ය වියදම්';$('wantsLabel').textContent='අවශ්‍යතා / කැමති වියදම්';$('budgetTitle').textContent='මාසික වියදම් සීමාව';$('saveBudget').textContent='සුරකින්න';$('goalTitle').textContent='ප්‍රධාන ඉතිරි කිරීමේ ඉලක්කය';$('saveGoal').textContent='ඉලක්කය සුරකින්න'}}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script>
+</body></html>
